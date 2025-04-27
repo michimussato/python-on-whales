@@ -257,6 +257,7 @@ class ImageCLI(DockerCLICaller):
             pull: Always attempt to pull a newer version of the image
             tags: Tag or tags to put on the resulting image.
             target: Set the target build stage to build.
+            dagster_context: The Dagster AssetExecutionContext.
 
         # Returns
             A `python_on_whales.Image`
@@ -279,7 +280,10 @@ class ImageCLI(DockerCLICaller):
             self.client_config
         )
         full_cmd.append(context_path)
-        image_id = run(full_cmd, dagster_context=dagster_context).splitlines()[-1].strip()
+        image_id = run(
+            args=full_cmd,
+            dagster_context=dagster_context,
+        ).splitlines()[-1].strip()
         return docker_image.inspect(image_id)
 
     def history(self):
@@ -528,7 +532,12 @@ class ImageCLI(DockerCLICaller):
         run(full_cmd, capture_stdout=quiet, capture_stderr=quiet)
         return Image(self.client_config, image_name)
 
-    def push(self, x: Union[str, Iterable[str]], quiet: bool = False) -> None:
+    def push(
+            self,
+            x: Union[str, Iterable[str]],
+            quiet: bool = False,
+            dagster_context: Optional[AssetExecutionContext] = None,
+    ) -> None:
         """Push a tag or a repository to a registry
 
         Alias: `docker.push(...)`
@@ -551,17 +560,29 @@ class ImageCLI(DockerCLICaller):
         if images == []:
             return
         elif len(images) == 1:
-            self._push_single_tag(images[0], quiet)
+            self._push_single_tag(
+                images[0],
+                quiet,
+                dagster_context,
+            )
         elif len(images) >= 2:
             pool = ThreadPool(4)
-            pool.starmap(self._push_single_tag, ((img, quiet) for img in images))
+            pool.starmap(self._push_single_tag, ((img, quiet, dagster_context) for img in images))
             pool.close()
             pool.join()
 
-    def _push_single_tag(self, tag_or_repo: str, quiet: bool):
+    def _push_single_tag(
+            self,
+            tag_or_repo: str,
+            quiet: bool,
+            dagster_context: Optional[AssetExecutionContext] = None,
+    ):
         full_cmd = self.docker_cmd + ["image", "push"]
         full_cmd.add_flag("--quiet", quiet)
         full_cmd.append(tag_or_repo)
+
+        if dagster_context:
+            dagster_context.log.debug(f"{full_cmd = }")
         run(full_cmd, capture_stdout=quiet, capture_stderr=quiet)
 
     def remove(
