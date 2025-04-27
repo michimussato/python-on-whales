@@ -225,7 +225,7 @@ class ImageCLI(DockerCLICaller):
         pull: bool = False,
         tags: Union[str, Iterable[str]] = (),
         target: Optional[str] = None,
-        dagster_context: Optional[AssetExecutionContext] = None,
+        dagster_context: Optional[Union[AssetExecutionContext, None]] = None,
     ) -> python_on_whales.components.image.cli_wrapper.Image:
         """Build a Docker image with the old Docker builder (meaning not using buildx/buildkit)
 
