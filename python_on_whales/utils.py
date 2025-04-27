@@ -34,6 +34,8 @@ from python_on_whales.exceptions import (
     NotASwarmManager,
 )
 
+from dagster import AssetExecutionContext  # , get_dagster_logger
+
 PROJECT_ROOT = Path(__file__).parents[1]
 
 
@@ -130,6 +132,7 @@ def run(
     env: Dict[str, str] = {},
     tty: bool = False,
     pass_fds: Sequence[int] = (),
+    dagster_context: Optional[AssetExecutionContext] = None,
 ) -> Union[str, Tuple[str, str]]:
     args = [str(x) for x in args]
     subprocess_env = dict(os.environ)
@@ -153,6 +156,8 @@ def run(
         print("command: " + " ".join(args))
         print(f"Env: {subprocess_env}")
         print("------------------------------")
+    if dagster_context:
+        dagster_context.log.debug(f"{args = }")
     completed_process = subprocess.run(
         args,
         input=input,

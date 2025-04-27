@@ -26,6 +26,8 @@ from python_on_whales.components.image.models import (
 from python_on_whales.exceptions import DockerException, NoSuchImage
 from python_on_whales.utils import ValidPath, run, stream_stdout_and_stderr, to_list
 
+from dagster import AssetExecutionContext
+
 
 class Image(ReloadableObjectFromJson):
     def __init__(
@@ -223,6 +225,7 @@ class ImageCLI(DockerCLICaller):
         pull: bool = False,
         tags: Union[str, Iterable[str]] = (),
         target: Optional[str] = None,
+        dagster_context: Optional[AssetExecutionContext] = None,
     ) -> python_on_whales.components.image.cli_wrapper.Image:
         """Build a Docker image with the old Docker builder (meaning not using buildx/buildkit)
 
@@ -276,7 +279,7 @@ class ImageCLI(DockerCLICaller):
             self.client_config
         )
         full_cmd.append(context_path)
-        image_id = run(full_cmd).splitlines()[-1].strip()
+        image_id = run(full_cmd, dagster_context=dagster_context).splitlines()[-1].strip()
         return docker_image.inspect(image_id)
 
     def history(self):
