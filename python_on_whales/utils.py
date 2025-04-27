@@ -107,6 +107,7 @@ def run(
     env: Dict[str, str] = ...,
     tty: bool = ...,
     pass_fds: Sequence[int] = ...,
+    dagster_context: Optional[Union[AssetExecutionContext, None]] = ...,
 ) -> Tuple[str, str]: ...
 
 
@@ -120,6 +121,7 @@ def run(
     env: Dict[str, str] = ...,
     tty: bool = ...,
     pass_fds: Sequence[int] = ...,
+    dagster_context: Optional[Union[AssetExecutionContext, None]] = ...,
 ) -> str: ...
 
 
@@ -132,7 +134,7 @@ def run(
     env: Dict[str, str] = {},
     tty: bool = False,
     pass_fds: Sequence[int] = (),
-    dagster_context: Optional[AssetExecutionContext] = None,
+    dagster_context: Optional[Union[AssetExecutionContext, None]] = None,
 ) -> Union[str, Tuple[str, str]]:
     args = [str(x) for x in args]
     subprocess_env = dict(os.environ)
