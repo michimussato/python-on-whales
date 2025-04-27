@@ -158,7 +158,7 @@ def run(
         print("command: " + " ".join(args))
         print(f"Env: {subprocess_env}")
         print("------------------------------")
-    if dagster_context:
+    if isinstance(dagster_context, AssetExecutionContext):
         dagster_context.log.debug(f"{args = }")
     completed_process = subprocess.run(
         args,

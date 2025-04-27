@@ -536,7 +536,7 @@ class ImageCLI(DockerCLICaller):
             self,
             x: Union[str, Iterable[str]],
             quiet: bool = False,
-            dagster_context: Optional[AssetExecutionContext] = None,
+            dagster_context: Optional[Union[AssetExecutionContext, None]] = None,
     ) -> None:
         """Push a tag or a repository to a registry
 
@@ -561,9 +561,9 @@ class ImageCLI(DockerCLICaller):
             return
         elif len(images) == 1:
             self._push_single_tag(
-                images[0],
-                quiet,
-                dagster_context,
+                tag_or_repo=images[0],
+                quiet=quiet,
+                dagster_context=dagster_context,
             )
         elif len(images) >= 2:
             pool = ThreadPool(4)
@@ -575,13 +575,13 @@ class ImageCLI(DockerCLICaller):
             self,
             tag_or_repo: str,
             quiet: bool,
-            dagster_context: Optional[AssetExecutionContext] = None,
+            dagster_context: Optional[Union[AssetExecutionContext, None]] = None,
     ):
         full_cmd = self.docker_cmd + ["image", "push"]
         full_cmd.add_flag("--quiet", quiet)
         full_cmd.append(tag_or_repo)
 
-        if dagster_context:
+        if isinstance(dagster_context, AssetExecutionContext):
             dagster_context.log.debug(f"{full_cmd = }")
         run(full_cmd, capture_stdout=quiet, capture_stderr=quiet)
 
