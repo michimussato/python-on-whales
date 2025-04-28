@@ -287,7 +287,7 @@ class ImageCLI(DockerCLICaller):
         if isinstance(dagster_context, AssetExecutionContext):
             dagster_context.log.debug(f"{full_cmd = }")
         image_id = run(
-            args=full_cmd,
+            full_cmd,
             dagster_context=dagster_context,
         ).splitlines()[-1].strip()
         return docker_image.inspect(image_id)
