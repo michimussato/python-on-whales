@@ -264,7 +264,8 @@ class ImageCLI(DockerCLICaller):
         """
         # to make it easier to write and read tests, the tests of this function
         # are also grouped with the tests of "docker.build()".
-        full_cmd = self.docker_cmd + ["build", "--quiet"]
+        full_cmd = self.docker_cmd + ["build"]
+        full_cmd.add_simple_arg("--progress", "plain")
 
         full_cmd.add_args_mapping("--add-host", add_hosts, separator=":")
         full_cmd.add_args_mapping("--build-arg", build_args)
