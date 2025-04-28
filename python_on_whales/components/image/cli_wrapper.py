@@ -223,6 +223,8 @@ class ImageCLI(DockerCLICaller):
         labels: Mapping[str, str] = {},
         network: Optional[str] = None,
         pull: bool = False,
+        quiet: bool = False,
+        progress: str = "plain",
         tags: Union[str, Iterable[str]] = (),
         target: Optional[str] = None,
         dagster_context: Optional[Union[AssetExecutionContext, None]] = None,
@@ -265,8 +267,9 @@ class ImageCLI(DockerCLICaller):
         # to make it easier to write and read tests, the tests of this function
         # are also grouped with the tests of "docker.build()".
         full_cmd = self.docker_cmd + ["build"]
-        full_cmd.add_simple_arg("--progress", "plain")
+        full_cmd.add_flag("--quiet", quiet)
 
+        full_cmd.add_simple_arg("--progress", progress)
         full_cmd.add_args_mapping("--add-host", add_hosts, separator=":")
         full_cmd.add_args_mapping("--build-arg", build_args)
         full_cmd.add_args_mapping("--label", labels)
@@ -537,6 +540,7 @@ class ImageCLI(DockerCLICaller):
             self,
             x: Union[str, Iterable[str]],
             quiet: bool = False,
+            progress: str = "plain",
             dagster_context: Optional[Union[AssetExecutionContext, None]] = None,
     ) -> None:
         """Push a tag or a repository to a registry
@@ -564,11 +568,12 @@ class ImageCLI(DockerCLICaller):
             self._push_single_tag(
                 tag_or_repo=images[0],
                 quiet=quiet,
+                progress=progress,
                 dagster_context=dagster_context,
             )
         elif len(images) >= 2:
             pool = ThreadPool(4)
-            pool.starmap(self._push_single_tag, ((img, quiet, dagster_context) for img in images))
+            pool.starmap(self._push_single_tag, ((img, quiet, progress, dagster_context) for img in images))
             pool.close()
             pool.join()
 
@@ -576,10 +581,12 @@ class ImageCLI(DockerCLICaller):
             self,
             tag_or_repo: str,
             quiet: bool,
+            progress: str = "plain",
             dagster_context: Optional[Union[AssetExecutionContext, None]] = None,
     ):
         full_cmd = self.docker_cmd + ["image", "push"]
         full_cmd.add_flag("--quiet", quiet)
+        full_cmd.add_simple_arg("--progress", progress)
         full_cmd.append(tag_or_repo)
 
         if isinstance(dagster_context, AssetExecutionContext):
