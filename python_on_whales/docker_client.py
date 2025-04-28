@@ -1,7 +1,7 @@
 import base64
 import json
 import warnings
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Union
 
 import pydantic
 from typing_extensions import Annotated
@@ -28,6 +28,7 @@ from python_on_whales.components.trust.cli_wrapper import TrustCLI
 from python_on_whales.components.volume.cli_wrapper import VolumeCLI
 
 from .utils import DockerCamelModel, ValidPath, run
+from dagster import AssetExecutionContext
 
 
 class ClientVersion(DockerCamelModel):
@@ -293,6 +294,7 @@ class DockerClient(DockerCLICaller):
         server: Optional[str] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
+        dagster_context: Optional[Union[AssetExecutionContext, None]] = None,
     ):
         """Log in to a Docker registry.
 
@@ -315,6 +317,7 @@ class DockerClient(DockerCLICaller):
             capture_stderr=False,
             capture_stdout=False,
             input=password.encode(),
+            dagster_context=dagster_context,
         )
 
     def logout(self, server: Optional[str] = None):
