@@ -305,6 +305,7 @@ class DockerClient(DockerCLICaller):
                 it might be something like `server="192.168.0.10:5000"`
             username: The username
             password: The password
+            dagster_context:
         """
         full_cmd = self.docker_cmd + ["login", "--password-stdin"]
 
